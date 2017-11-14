@@ -88,23 +88,30 @@ dst = np.float32([[offset,0],
 
 I verified that my perspective transform was working as expected by using it on a test image, as can be seen below.
 
-![alt text][image4]
+![alt text][image3]
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
-
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+I begin by taking the histogram of the bottom half of the binary warped image (Cell 9) as can be seen below
 
 ![alt text][image5]
 
+I then proceed to use the highest value of the left and right side of the histogram as the starting point, and use a sliding window search algorithm to locate the lane lines (Cell 10), as can be seen below
+
+![alt text][image4]
+
+Finally, in cell 12 the function for fitting a second order polynomial can be seen, and the result can be seen below
+
+![alt text][image6]
+
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
+Cell 14 contains two functions, one for getting the radius of the lane lines, and one for measuring the distance from the middle. Note that only the left lane line was used for this calculation.
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+Cell 15 contains a function for drawing the lines, and warping the image back to the way it was before warping it in the first place. The result can be seen below
 
-![alt text][image6]
+![alt text][image7]
 
 ---
 
@@ -112,7 +119,7 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_output.mp4)
 
 ---
 
@@ -120,4 +127,10 @@ Here's a [link to my video result](./project_video.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+Initially, my pipeline work quite well, up untill the lighting conditions became brighter and the lane lines were somewhat more difficult to find. The code for my pipeline can be found in cell 18, and here I've done a few things to help improve its performance.
+
+First, I began by checking for large spikes in curvature differences, between the current and the previous value. Here, and for all modifications, if the change is undesirable, the previous curvature is used. The change in curvature was considered undesirable if the absolute value was greater than the value of the variable called "limit", located in cells 19 and 20. The current value for this limit is 5000.
+
+Next, I checked the sign of the radius curve, and the difference between the previous value and the current one. If this value is large, and the direction has changed, then this is clearly an unwanted change since roads don't usually change direction that quick. 
+
+Finally, I check for sudden changes in x coordinates. If the changes were too large, the previous x coordinates were used instead. The varables pxDist and pxDistTol are used here, where pxDist is the distance between the lane lines, and pxDistTol is the amount of pixels that the lane lines can move. So the distance between the left and right lane lines should have a pixel distance of pxDist, and move plus minus pxDistTol. The values used for pxDist is 600 and pxDistTol is 120. This means that the maximum distance between the lane lines should be 720 pixels, and the minimum distance should be 480. If this distance is greater than the maximum, or lower than the minimum, the previous x coordinates were used. This is done for every x coordinate 
